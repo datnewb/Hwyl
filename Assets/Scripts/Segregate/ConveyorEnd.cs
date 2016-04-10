@@ -4,6 +4,8 @@ public class ConveyorEnd : MonoBehaviour
 {
     void OnTriggerEnter2D(Collider2D p_other)
     {
-        Destroy(p_other.gameObject);
+        Garbage garbage = p_other.GetComponent<Garbage>();
+        if (garbage != null)
+            garbage.DestroyGarbage();
     }
 }
