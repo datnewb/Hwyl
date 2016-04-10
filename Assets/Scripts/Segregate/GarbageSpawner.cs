@@ -48,7 +48,7 @@ public class GarbageSpawner : MonoBehaviour
         GameObject garbageToSpawn = m_garbages[Random.Range(0, m_garbages.Count)];
         Vector3 randomSpawnPosition = new Vector3(Random.Range(m_spawnArea.xMin, m_spawnArea.xMax), Random.Range(m_spawnArea.yMin, m_spawnArea.yMax));
 
-        GameObject spawnedGarbage = Instantiate(garbageToSpawn, randomSpawnPosition, Quaternion.identity) as GameObject;
+        Instantiate(garbageToSpawn, randomSpawnPosition, Quaternion.identity);
     }
 
     void ResetTimer()
