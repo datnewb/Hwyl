@@ -2,8 +2,12 @@
 
 public class Garbage : MonoBehaviour
 {
+    public GarbageType m_garbageType;
+
     internal bool m_isOnConveyor;
     internal bool m_isDragging;
+    internal bool m_isInBin;
+    internal bool m_isInCorrectBin;
 
     void Start()
     {
@@ -33,7 +37,7 @@ public class Garbage : MonoBehaviour
     void OnMouseUp()
     {
         m_isDragging = false;
-        if (!m_isOnConveyor)
+        if (!m_isOnConveyor || m_isInBin)
         {
             DestroyGarbage();
         }
@@ -41,6 +45,27 @@ public class Garbage : MonoBehaviour
 
     internal void DestroyGarbage()
     {
+        if (!m_isOnConveyor && !m_isInBin)
+        {
+            Debug.Log("Missed");
+        }
+        else if (m_isInBin)
+        {
+            if (m_isInCorrectBin)
+            {
+                Debug.Log("Correct");
+            }
+            else
+            {
+                Debug.Log("Wrong");
+            }
+        }
         Destroy(gameObject);
     }
+}
+
+public enum GarbageType
+{
+    Biodegradable,
+    NonBiodegradable
 }

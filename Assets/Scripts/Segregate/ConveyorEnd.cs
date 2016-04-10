@@ -6,6 +6,10 @@ public class ConveyorEnd : MonoBehaviour
     {
         Garbage garbage = p_other.GetComponent<Garbage>();
         if (garbage != null)
+        {
+            garbage.m_isOnConveyor = false;
             garbage.DestroyGarbage();
+        }
+            
     }
 }
