@@ -10,11 +10,15 @@ public class Interactible : MonoBehaviour
 {
     [SerializeField]
     internal InteractibleType m_interactibleType;
+    [SerializeField]
+    internal string m_name;
 
     private GameObject m_playerObject;
     internal bool m_isInteracting;
 
     private DialogHandler m_dialogHandler;
+
+    internal ObjectDialog m_objectDialog;
 
     void Start()
     {
@@ -22,6 +26,7 @@ public class Interactible : MonoBehaviour
         m_isInteracting = false;
 
         m_dialogHandler = FindObjectOfType<DialogHandler>();
+        m_objectDialog = GetComponent<ObjectDialog>();
     }
 
     void Update()

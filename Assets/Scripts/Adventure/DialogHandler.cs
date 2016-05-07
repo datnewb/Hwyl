@@ -1,17 +1,26 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System.Collections.Generic;
+using UnityEngine.UI;
 
 public class DialogHandler : MonoBehaviour
 {
     [SerializeField]
     internal GameObject m_dialogPanel;
     [SerializeField]
+    internal Text m_dialogName;
+    [SerializeField]
+    internal Text m_dialogMessage;
+    [SerializeField]
     internal GameObject m_dialogNamePanel;
+    [SerializeField]
+    internal GameObject m_dialogAnswerPanel;
 
     private bool m_canGoNext = false;
+    private bool m_isQuestion = false;
     internal bool m_isInDialog = false;
 
     private Interactible m_objectInteracting = null;
+    private int m_currentDialogCount = -1;
     private PlayerMovement m_playerMovement = null;
 
     void Start()
@@ -24,9 +33,20 @@ public class DialogHandler : MonoBehaviour
     {
         if (m_canGoNext)
         {
-            if (Input.GetMouseButtonDown(0) || Input.touchCount > 0)
+            if (!m_isQuestion)
             {
-                EndDialog();
+                if (Input.GetMouseButtonDown(0) || Input.touchCount > 0)
+                {
+                    if (m_currentDialogCount + 1 < m_objectInteracting.m_objectDialog.m_messages.Count &&
+                        !m_objectInteracting.m_objectDialog.m_messages[m_currentDialogCount].m_isDialogEnder)
+                    {
+                        NextDialogMessage();
+                    }
+                    else
+                    {
+                        EndDialog();
+                    }
+                }
             }
         }
     }
@@ -37,18 +57,77 @@ public class DialogHandler : MonoBehaviour
 
         m_dialogPanel.SetActive(true);
         if (interactible.m_interactibleType == InteractibleType.Object)
+        {
             m_dialogNamePanel.SetActive(false);
+        }
         else
+        {
             m_dialogNamePanel.SetActive(true);
+            m_dialogName.text = interactible.m_name;
+        }
+
         m_isInDialog = true;
         m_objectInteracting = interactible;
         m_canGoNext = true;
+
+        NextDialogMessage(0);
+    }
+
+    internal void NextDialogMessage()
+    {
+        m_canGoNext = false;
+        Invoke("AllowNext", 0.1f);
+
+        m_currentDialogCount++;
+        m_dialogMessage.text = m_objectInteracting.m_objectDialog.m_messages[m_currentDialogCount].m_message;
+        m_isQuestion = m_objectInteracting.m_objectDialog.m_messages[m_currentDialogCount].m_isQuestion;
+        if (m_isQuestion)
+            ShowAnswerPanel();
+        else
+            HideAnswerPanel();
+    }
+
+    internal void NextDialogMessage(int index)
+    {
+        m_canGoNext = false;
+        Invoke("AllowNext", 0.1f);
+
+        m_currentDialogCount = index;
+        m_dialogMessage.text = m_objectInteracting.m_objectDialog.m_messages[m_currentDialogCount].m_message;
+        m_isQuestion = m_objectInteracting.m_objectDialog.m_messages[m_currentDialogCount].m_isQuestion;
+        if (m_isQuestion)
+            ShowAnswerPanel();
+        else
+            HideAnswerPanel();
+    }
+
+    internal void ShowAnswerPanel()
+    {
+        m_dialogAnswerPanel.SetActive(true);
+    }
+
+    internal void HideAnswerPanel()
+    {
+        m_dialogAnswerPanel.SetActive(false);
+    }
+
+    public void YesAnswer()
+    {
+        NextDialogMessage(m_objectInteracting.m_objectDialog.m_messages[m_currentDialogCount].m_yesMessageIndex);
+        HideAnswerPanel();
+    }
+
+    public void NoAnswer()
+    {
+        NextDialogMessage(m_objectInteracting.m_objectDialog.m_messages[m_currentDialogCount].m_noMessageIndex);
+        HideAnswerPanel();
     }
 
     internal void EndDialog()
     {
         m_dialogPanel.SetActive(false);
         m_canGoNext = false;
+        m_currentDialogCount = 0;
         Invoke("DialogReset", 0.1f);
     }
 
