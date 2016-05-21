@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
-using System.Collections.Generic;
 using UnityEngine.UI;
+using UnityEngine.Events;
 
 public class DialogHandler : MonoBehaviour
 {
@@ -21,6 +21,7 @@ public class DialogHandler : MonoBehaviour
 
     private Interactible m_objectInteracting = null;
     private int m_currentDialogCount = -1;
+    private int m_previousDialogCount = -1;
     private PlayerMovement m_playerMovement = null;
 
     void Start()
@@ -70,17 +71,36 @@ public class DialogHandler : MonoBehaviour
         m_objectInteracting = interactible;
         m_canGoNext = true;
 
+        m_previousDialogCount = -1;
         NextDialogMessage(0);
     }
 
     internal void NextDialogMessage()
     {
+        m_previousDialogCount = m_currentDialogCount;
+        m_currentDialogCount++;
+
+        Dialog currentDialog = m_objectInteracting.m_objectDialog.m_messages[m_currentDialogCount];
+        Dialog previousDialog = null;
+        if (m_previousDialogCount != -1)
+            previousDialog = m_objectInteracting.m_objectDialog.m_messages[m_previousDialogCount];
+
+        if (previousDialog != null && previousDialog.m_postMessageActions != null)
+        {
+            previousDialog.m_postMessageActions.Invoke();
+        }
+
+        if (currentDialog.m_preMessageActions != null)
+        {
+            currentDialog.m_preMessageActions.Invoke();
+        }
+
         m_canGoNext = false;
         Invoke("AllowNext", 0.1f);
 
-        m_currentDialogCount++;
-        m_dialogMessage.text = m_objectInteracting.m_objectDialog.m_messages[m_currentDialogCount].m_message;
-        m_isQuestion = m_objectInteracting.m_objectDialog.m_messages[m_currentDialogCount].m_isQuestion;
+        
+        m_dialogMessage.text = currentDialog.m_message;
+        m_isQuestion = currentDialog.m_isQuestion;
         if (m_isQuestion)
             ShowAnswerPanel();
         else
@@ -89,10 +109,27 @@ public class DialogHandler : MonoBehaviour
 
     internal void NextDialogMessage(int index)
     {
+        m_currentDialogCount = index;
+        m_previousDialogCount = m_currentDialogCount;
+
+        Dialog currentDialog = m_objectInteracting.m_objectDialog.m_messages[m_currentDialogCount];
+        Dialog previousDialog = null;
+        if (m_previousDialogCount != -1)
+            previousDialog = m_objectInteracting.m_objectDialog.m_messages[m_previousDialogCount];
+
+        if (previousDialog != null && previousDialog.m_postMessageActions != null)
+        {
+            previousDialog.m_postMessageActions.Invoke();
+        }
+
+        if (currentDialog.m_preMessageActions != null)
+        {
+            currentDialog.m_preMessageActions.Invoke();
+        }
+
         m_canGoNext = false;
         Invoke("AllowNext", 0.1f);
 
-        m_currentDialogCount = index;
         m_dialogMessage.text = m_objectInteracting.m_objectDialog.m_messages[m_currentDialogCount].m_message;
         m_isQuestion = m_objectInteracting.m_objectDialog.m_messages[m_currentDialogCount].m_isQuestion;
         if (m_isQuestion)

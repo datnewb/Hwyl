@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Events;
 
 public enum InteractibleType
 {
@@ -6,10 +7,20 @@ public enum InteractibleType
     Object
 }
 
+public enum InteractType
+{
+    Hold,
+    Instant
+}
+
 public class Interactible : MonoBehaviour
 {
     [SerializeField]
     internal InteractibleType m_interactibleType;
+    [SerializeField]
+    internal InteractType m_interactType;
+    [SerializeField]
+    internal UnityEvent m_onInteractFunction;
     [SerializeField]
     internal string m_name;
 
@@ -35,8 +46,13 @@ public class Interactible : MonoBehaviour
         {   
             if (Vector3.Distance(transform.position, m_playerObject.transform.position) < 3)
             {
-                if (!m_dialogHandler.m_isInDialog)
-                    m_dialogHandler.StartDialog(this);
+                if (m_objectDialog != null)
+                {
+                    if (!m_dialogHandler.m_isInDialog)
+                        m_dialogHandler.StartDialog(this);
+                }
+
+                m_onInteractFunction.Invoke();
             }
         }
 
