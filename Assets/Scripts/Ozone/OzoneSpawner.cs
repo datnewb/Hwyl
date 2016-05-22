@@ -12,24 +12,43 @@ public class OzoneSpawner : MonoBehaviour
     internal float m_carbonBlockSpeed;
 
     private bool m_canSpawn = true;
+
+    internal List<CarbonBlockRow> m_carbonBlockRows;
 	
     void Start()
     {
-        List<int> exceptions = new List<int>();
-        exceptions.Add(Random.Range(0, m_spawnPoints.Length));
-        Debug.Log(exceptions[0]);
+        m_carbonBlockRows = new List<CarbonBlockRow>();
 
-        SpawnCarbonBlockColumn(exceptions);
+        SpawnCarbonBlockRow(1);
     }
 
-    private void SpawnCarbonBlockColumn(List<int> p_exceptions)
+    void Update()
     {
+        foreach (CarbonBlockRow carbonBlockRow in m_carbonBlockRows)
+        {
+            carbonBlockRow.UpdateYPos();
+        }
+
+        if (m_carbonBlockRows.Count <= 0)
+        {
+            SpawnCarbonBlockRow(1);
+        }
+    }
+
+    private void SpawnCarbonBlockRow(int p_exceptions)
+    {
+        List<CarbonBlock> carbonBlocks = new List<CarbonBlock>();
+
+        List<int> exceptions = new List<int>();
+        for (int i = 0; i < p_exceptions; i++)
+            exceptions.Add(Random.Range(0, m_spawnPoints.Length));
+
         for (int spawnIndex = 0; spawnIndex < m_spawnPoints.Length; spawnIndex++)
         {
             bool exceptionFound = false;
-            for (int exceptionIndex = 0; exceptionIndex < p_exceptions.Count; exceptionIndex++)
+            for (int exceptionIndex = 0; exceptionIndex < exceptions.Count; exceptionIndex++)
             {
-                if (spawnIndex == p_exceptions[exceptionIndex])
+                if (spawnIndex == exceptions[exceptionIndex])
                 {
                     exceptionFound = true;
                     break;
@@ -38,27 +57,29 @@ public class OzoneSpawner : MonoBehaviour
 
             if (!exceptionFound)
             {
-                SpawnCarbonBlock(m_spawnPoints[spawnIndex].position);
+                carbonBlocks.Add(SpawnCarbonBlock(m_spawnPoints[spawnIndex].position, spawnIndex));
             }
         }
+
+        CarbonBlockRow carbonBlockRow = new CarbonBlockRow(carbonBlocks, exceptions);
+        m_carbonBlockRows.Add(carbonBlockRow);
     }
 
-    private void SpawnCarbonBlock(Vector2 p_position)
+    private CarbonBlock SpawnCarbonBlock(Vector2 p_position, int p_index)
     {
         GameObject carbonBlock = Instantiate(m_carbonBlock, p_position, Quaternion.identity) as GameObject;
+        carbonBlock.GetComponent<CarbonBlock>().m_position = p_index;
         carbonBlock.GetComponent<CarbonBlock>().m_speed = m_carbonBlockSpeed;
         carbonBlock.GetComponent<CarbonBlock>().m_carbonBlockType = CarbonBlockType.Downward;
+
+        return carbonBlock.GetComponent<CarbonBlock>();
     }
 
     void OnTriggerExit2D(Collider2D other)
     {
         if (m_canSpawn)
         {
-            List<int> exceptions = new List<int>();
-            exceptions.Add(Random.Range(0, m_spawnPoints.Length));
-            Debug.Log(exceptions[0]);
-
-            SpawnCarbonBlockColumn(exceptions);
+            SpawnCarbonBlockRow(1);
 
             m_canSpawn = false;
             Invoke("ResetSpawn", 0.01f);
